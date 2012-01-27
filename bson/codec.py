@@ -10,7 +10,36 @@ import cStringIO
 import calendar, pytz
 from datetime import datetime
 import warnings
-from abc import ABCMeta, abstractmethod
+try:
+	from abc import ABCMeta, abstractmethod
+except ImportError:
+	# If abc is not present (older versions of python), just define the ABCMeta
+	# class as a dummy class, we don't really need it anyway.
+	class ABCMeta(type):
+		pass
+
+	def abstractmethod(funcobj):
+		"""A decorator indicating abstract methods.
+
+		Requires that the metaclass is ABCMeta or derived from it.	A
+		class that has a metaclass derived from ABCMeta cannot be
+		instantiated unless all of its abstract methods are overridden.
+		The abstract methods can be called using any of the normal
+		'super' call mechanisms.
+
+		Usage:
+
+			class C:
+
+			__metaclass__ = ABCMeta
+
+			@abstractmethod
+			def my_abstract_method(self, ...):
+				...
+		"""
+		funcobj.__isabstractmethod__ = True
+		return funcobj
+
 
 # {{{ Error Classes
 class MissingClassDefinition(ValueError):
@@ -142,7 +171,7 @@ ELEMENT_TYPES = {
 		0x04 : "array",
 		0x05 : "binary",
 		0x08 : "boolean",
-        0x09 : "UTCdatetime",
+				0x09 : "UTCdatetime",
 		0x0A : "none",
 		0x10 : "int32",
 		0x12 : "int64"
